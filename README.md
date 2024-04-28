@@ -17,8 +17,9 @@ Each of the modules runs in its own container.
 
 ## Launch instruction
 
-To launch app use command: 
-`docker compose up --build`
+To launch app run the command: 
+
+    docker compose up --build
 
 Web app will be available on: `http://localhost:3000/`
 
