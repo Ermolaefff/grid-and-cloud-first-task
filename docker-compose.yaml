@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: database-service
+    environment:
+      - PGTZ=${PGTZ}
+      - TZ=${TZ}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./database/mounted:/var/lib/postgresql/data
+
+  api:
+    image: api:alpha
+    container_name: api-service
+    build:
+      context: ./api/
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+    environment:
+      - TZ=${TZ}
+      - MOUNTED_DIR=${MOUNTED_DIR}
+      - POSTGRES_URL=${POSTGRES_URL}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./api/mounted:${MOUNTED_DIR}
+
+  frontend:
+    image: frontend:alpha
+    container_name: frontend-service
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile
+      args:
+        BACKEND_API: ${BACKEND_API}
+    depends_on:
+      - api
+    environment:
+      - TZ=${TZ}
+      - MOUNTED_DIR=${MOUNTED_DIR}
+    ports:
+      - "3000:3000"
